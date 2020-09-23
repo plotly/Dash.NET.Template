@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <PackageType>Template</PackageType>
+        <PackageVersion>0.0.1</PackageVersion>
+        <PackageId>Dash.NET.Template</PackageId>
+        <Title>Dash.NET.Template</Title>
+        <Authors>Kevin Schneider</Authors>
+        <Description>Dash.NET Template</Description>
+        <PackageTags>dotnet-new;templates;F#;FSharp;C#;CSharp;Dash;Plotly</PackageTags>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <PackageReleaseNotes>
+            
+        </PackageReleaseNotes>
+        <IncludeContentInPack>true</IncludeContentInPack>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>content</ContentTargetFolders>
+        <NoDefaultExcludes >true</NoDefaultExcludes >
+        <PackageProjectUrl>https://github.com/plotly/Dash.NET.Template</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="Content\**\*" 
+                 Exclude="Content\**\bin\**;Content\**\obj\**;Content\.template.config\" />
+        <Compile Remove="**\*" />
+        <Content Include="Content\**\.gitignore"/>
+    </ItemGroup>
+
+</Project>
