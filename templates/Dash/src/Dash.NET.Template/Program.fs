@@ -1,4 +1,4 @@
-module Dash.NET.Template.App
+module Dash.NET.POC.App
 
 open System
 open System.IO
@@ -11,94 +11,96 @@ open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Giraffe.ModelBinding
 
-// --------------------
-// Set up the dash app components
-// --------------------
-//Create a plotly graph component from a Plotly.NET chart object
-
-open Plotly.NET
 open Dash.NET
-
-//set up and style the chart
-
-let presetAxis title = Axis.LinearAxis.init(Title=title,Mirror=StyleParam.Mirror.All,Ticks=StyleParam.TickOptions.Inside,Showgrid=false,Showline=true,Zeroline=true)
-let applyPresetStyle xName yName chart = chart |> Chart.withX_Axis (presetAxis xName) |> Chart.withY_Axis (presetAxis yName)
-
-let rndData amnt = 
-    let rnd = System.Random()
-    [for i in [1 .. amnt] do yield (rnd.NextDouble(),rnd.NextDouble())]
-
-//Generate the graph component
-
-let testChart = 
-    Chart.Point(rndData 1)
-    |> applyPresetStyle "xAxis" "yAxis"
-    |> Chart.withSize (1000.,1000.)
+open Plotly.NET
 
 
-open Dash.NET.DCC_DSL
-open Dash.NET.HTML_DSL
+module Helpers = 
+
+    ///returns a choropleth plot that has the input country highlighted.
+    let createWorldHighlightFigure countryName =
+        Chart.ChoroplethMap(locations=[countryName],z=[100],Locationmode = StyleParam.LocationFormat.CountryNames)
+        |> Chart.withMapStyle(
+            ShowLakes=true,
+            ShowOcean=true,
+            OceanColor="lightblue",
+            ShowRivers=true
+        )
+        |> Chart.withSize (1000.,1000.)
+        |> Chart.withLayout (Layout.init(Paper_bgcolor="rgba(0,0,0,0)",Plot_bgcolor="rgba(0,0,0,0)"))
+        |> GenericChart.toFigure
+
+//----------------------------------------------------------------------------------------------------
+//============================================== LAYOUT ==============================================
+//----------------------------------------------------------------------------------------------------
+
+//The layout describes the components that Dash will render for you. 
+open Dash.NET.HTML // this namespace contains the standard html copmponents, such as div, h1, etc.
+open Dash.NET.DCC  // this namespace contains the dash core components, the heart of your Dash.NET app.
+
 open HTMLPropTypes
 open ComponentPropTypes
 
-let dslLayout =
-    Div.div "myDiv-1" [ClassName "I am A Div"] [
-        Input.input "myInput-1" [
-            Input.Type InputType.Text
-            Input.ClassName "Hi"
-            Input.Name "My Name Is"
-            Input.Value "Hi From F# type something else to see a callback in action"
-        ] []
-        Div.div "myDiv-2" [ClassName "I am A Div"] [
+//Note that this layout uses css classes defined by Bulma (https://bulma.io/), which gets defined as a css dependency in the app section below.
+let dslLayout = 
+    Div.div [ClassName "section"; Custom ("Id",box "main-section")] [ //the style for 'main-section' is actually defined in a custom css that you can serve with the dash app.
+        H1.h1 [ClassName "title has-text-centered"] [str "Hello Dash from F#"]
+        Div.div [ClassName "content"] [ 
+            P.p [ClassName "has-text-centered"] [str "This is a simple example Dash.NET app that contains an input component, A world map graph, and a callback that highlights the country you type on that graph."]
         ]
-        Upload.upload "dataUpload" [
-            Upload.Accept "txt"
-            Upload.Filename (UploadFileName.SingleFile "Pls Upload A File")
-        ] []
-        Input.input "graphChanger" [
-            Input.Type InputType.Number
-        ] []
-
-        Div.div "GrapContainer" [] [
-            Graph.graph "testGraph" [
-                Graph.Figure (GenericChart.toFigure testChart)
-                Graph.Config (GenericChart.getConfig testChart)
-                Graph.Animate true
+        Div.div [ClassName "container"] [
+            H4.h4 [] [str "type a country name to highlight (Press enter to update)"]
+            Input.input "country-selection" [
+                Input.ClassName "input is-primary"
+                Input.Type InputType.Text
+                Input.Value "Germany"
+                Input.Debounce true
+            ] []
+        ]
+        Div.div [ClassName "container"] [
+            Graph.graph "world-highlight" [
+                Graph.ClassName "graph-style" 
+                Graph.Figure (Helpers.createWorldHighlightFigure "Germany")
             ] []
         ]
     ]
 
-let dslCallback1 =
-    Callback.create
-        [|
-            CallbackInput.create ("myInput-1","value")
-        |]
-        (CallbackOutput.create ("myDiv-2","children"))
-        (fun (i:string) -> 
-            sprintf "You Typed:%s" i
-        )    
+//----------------------------------------------------------------------------------------------------
+//============================================= Callbacks ============================================
+//----------------------------------------------------------------------------------------------------
 
-let dslCallback2 =
+//Callbacks define how your components can be updated and update each other. A callback has one or 
+//more Input components (defined by their id and the property that acts as input) and an output 
+//component (again defined by its id and output property). Additionally, a function that handles the 
+//input and returns the desired output is needed.
+
+///This callback takes the 'value' property of the component with the 'country-selection' id, and 
+///returns a map chart that will update the 'figure' property of the component with the 
+///'world-highlight' id
+let countryHighlightCallback =
     Callback.create
-        [|
-            CallbackInput.create ("graphChanger","value")
-        |]
-        (CallbackOutput.create ("testGraph","figure"))
-        (fun (amnt:int64) -> 
-            let amnt' = if (int amnt < 0) then 0 else (int amnt)
-            let data = rndData amnt'
-            Chart.Point(data)
-            |> applyPresetStyle "xAxis" "yAxis"
-            |> Chart.withSize (1000.,1000.)
-            |> GenericChart.toFigure
-        )
+        [|CallbackInput.create("country-selection","value")|]
+        (CallbackOutput.create("world-highlight","figure"))
+        (fun (countryName:string) -> countryName |> Helpers.createWorldHighlightFigure)
+
+//----------------------------------------------------------------------------------------------------
+//============================================= The App ==============================================
+//----------------------------------------------------------------------------------------------------
+
+//The 'DashApp' type is your central DashApp that contains all settings, configs, the layout, styles, 
+//scripts, etc. that makes up your Dash.NET app. 
 
 let myDashApp =
-    DashApp.initDefault()
-    |> DashApp.withLayout dslLayout
-    |> DashApp.withCallbackHandler("myDiv-2.children",dslCallback1)
-    |> DashApp.withCallbackHandler("testGraph.figure",dslCallback2)
+    DashApp.initDefault() // create a Dash.NET app with default settings
+    |> DashApp.withLayout dslLayout // register the layout defined above.
+    |> DashApp.addCSSLinks [ 
+        "main.css" // serve your custom css
+        "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.1/css/bulma.min.css" // register bulma as an external css dependency
+    ]
+    |> DashApp.withCallbackHandler("world-highlight.figure",countryHighlightCallback) // register the callback that will update the map
 
+
+// The things below are Giraffe/ASP:NetCore specific and will likely be abstracted in the future.
 
 // ---------------------------------
 // Error handler
