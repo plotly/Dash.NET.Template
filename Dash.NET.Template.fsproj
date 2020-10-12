@@ -1,30 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <PackageType>Template</PackageType>
-        <PackageVersion>0.0.2</PackageVersion>
-        <PackageId>Dash.NET.Template</PackageId>
-        <Title>Dash.NET.Template</Title>
-        <Authors>Kevin Schneider</Authors>
-        <Description>Dash.NET Template</Description>
-        <PackageTags>dotnet-new;templates;F#;FSharp;C#;CSharp;Dash;Plotly</PackageTags>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <PackageReleaseNotes>
-            
-        </PackageReleaseNotes>
-        <IncludeContentInPack>true</IncludeContentInPack>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
-        <ContentTargetFolders>content</ContentTargetFolders>
-        <NoDefaultExcludes >true</NoDefaultExcludes >
-        <PackageProjectUrl>https://github.com/plotly/Dash.NET.Template</PackageProjectUrl>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageType>Template</PackageType>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoDefaultExcludes >true</NoDefaultExcludes >
+    <PackageProjectUrl>https://github.com/plotly/Dash.NET.Template</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
 
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Content Include="Content\**\*" 
-                 Exclude="Content\**\bin\**;Content\**\obj\**;Content\.template.config\" />
-        <Compile Remove="**\*" />
-        <Content Include="Content\**\.gitignore"/>
-    </ItemGroup>
+  <ItemGroup>
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
+    <Compile Remove="**\*" />
+    <Content Include="templates\**\.gitignore"/>
+  </ItemGroup>
 
 </Project>
