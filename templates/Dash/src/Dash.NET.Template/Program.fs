@@ -78,10 +78,11 @@ let dslLayout =
 ///returns a map chart that will update the 'figure' property of the component with the 
 ///'world-highlight' id
 let countryHighlightCallback =
-    Callback.create
-        [|CallbackInput.create("country-selection","value")|]
-        (CallbackOutput.create("world-highlight","figure"))
+    Callback(
+        [|CallbackInput.create("country-selection","value")|],
+        (CallbackOutput.create("world-highlight","figure")),
         (fun (countryName:string) -> countryName |> Helpers.createWorldHighlightFigure)
+    )
 
 //----------------------------------------------------------------------------------------------------
 //============================================= The App ==============================================
@@ -93,11 +94,11 @@ let countryHighlightCallback =
 let myDashApp =
     DashApp.initDefault() // create a Dash.NET app with default settings
     |> DashApp.withLayout dslLayout // register the layout defined above.
-    |> DashApp.addCSSLinks [ 
+    |> DashApp.appendCSSLinks [ 
         "main.css" // serve your custom css
         "https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.1/css/bulma.min.css" // register bulma as an external css dependency
     ]
-    |> DashApp.withCallbackHandler("world-highlight.figure",countryHighlightCallback) // register the callback that will update the map
+    |> DashApp.addCallback countryHighlightCallback // register the callback that will update the map
 
 
 // The things below are Giraffe/ASP:NetCore specific and will likely be abstracted in the future.
@@ -128,7 +129,7 @@ let configureApp (app : IApplicationBuilder) =
         .UseHttpsRedirection()
         .UseCors(configureCors)
         .UseStaticFiles()
-        .UseGiraffe(DashApp.toWebApp myDashApp)
+        .UseGiraffe(DashApp.toHttpHandler myDashApp)
 
 let configureServices (services : IServiceCollection) =
     services.AddCors()    |> ignore
