@@ -112,6 +112,8 @@ let testTemplate =  BuildTask.create "testTemplate" [installTemplate] {
 
 }
 
+let _test = BuildTask.createEmpty "Test" [installTemplate; testTemplate; uninstallTemplate]
+
 let bootstrapBuildDependencies = BuildTask.createEmpty "bootstrapBuildDependencies" []
 
 BuildTask.runOrDefaultWithArguments pack
