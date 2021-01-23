@@ -4,8 +4,6 @@
     <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageType>Template</PackageType>
     <TargetFramework>netstandard2.1</TargetFramework>
     <IncludeContentInPack>true</IncludeContentInPack>
