@@ -9,7 +9,7 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
-open Giraffe.ModelBinding
+
 
 open Dash.NET
 open Plotly.NET
@@ -35,33 +35,53 @@ module Helpers =
 //----------------------------------------------------------------------------------------------------
 
 //The layout describes the components that Dash will render for you. 
-open Dash.NET.HTML // this namespace contains the standard html copmponents, such as div, h1, etc.
+open Dash.NET.Html // this namespace contains the standard html copmponents, such as div, h1, etc.
 open Dash.NET.DCC  // this namespace contains the dash core components, the heart of your Dash.NET app.
 
-open HTMLPropTypes
 open ComponentPropTypes
 
 //Note that this layout uses css classes defined by Bulma (https://bulma.io/), which gets defined as a css dependency in the app section below.
 let dslLayout = 
-    Div.div [ClassName "section"; Custom ("Id",box "main-section")] [ //the style for 'main-section' is actually defined in a custom css that you can serve with the dash app.
-        H1.h1 [ClassName "title has-text-centered"] [str "Hello Dash from F#"]
-        Div.div [ClassName "content"] [ 
-            P.p [ClassName "has-text-centered"] [str "This is a simple example Dash.NET app that contains an input component, A world map graph, and a callback that highlights the country you type on that graph."]
-        ]
-        Div.div [ClassName "container"] [
-            H4.h4 [] [str "type a country name to highlight (Press enter to update)"]
-            Input.input "country-selection" [
-                Input.ClassName "input is-primary"
-                Input.Type InputType.Text
-                Input.Value "Germany"
-                Input.Debounce true
-            ] []
-        ]
-        Div.div [ClassName "container"] [
-            Graph.graph "world-highlight" [
-                Graph.ClassName "graph-style" 
-                Graph.Figure (Helpers.createWorldHighlightFigure "Germany")
-            ] []
+    Html.div [
+        Attr.className "section"
+        Attr.id "main-section" //the style for 'main-section' is actually defined in a custom css that you can serve with the dash app.
+        Attr.children [
+            Html.h1 [
+                Attr.className "title has-text-centered"
+                Attr.children "Hello Dash from F#"
+            ]
+            Html.div [
+                Attr.className "content"
+                Attr.children [
+                    Html.p [
+                        Attr.className "has-text-centered"
+                        Attr.children "This is a simple example Dash.NET app that contains an input component, A world map graph, and a callback that highlights the country you type on that graph."
+                    ]
+                ]
+            ]
+            Html.div [
+                Attr.className "container"
+                Attr.children [
+                    Html.h4 [ 
+                        Attr.children "type a country name to highlight (Press enter to update)"
+                    ]
+                    Input.input "country-selection" [
+                        Input.ClassName "input is-primary"
+                        Input.Type InputType.Text
+                        Input.Value "Germany"
+                        Input.Debounce true
+                    ] []
+                ]
+            ]
+            Html.div [
+                Attr.className "container"
+                Attr.children [
+                    Graph.graph "world-highlight" [
+                        Graph.ClassName "graph-style" 
+                        Graph.Figure (Helpers.createWorldHighlightFigure "Germany")
+                    ] []
+                ]
+            ]
         ]
     ]
 
@@ -77,11 +97,16 @@ let dslLayout =
 ///This callback takes the 'value' property of the component with the 'country-selection' id, and 
 ///returns a map chart that will update the 'figure' property of the component with the 
 ///'world-highlight' id
+open Dash.NET.Operators
+
+
 let countryHighlightCallback =
-    Callback(
-        [|CallbackInput.create("country-selection","value")|],
-        (CallbackOutput.create("world-highlight","figure")),
-        (fun (countryName:string) -> countryName |> Helpers.createWorldHighlightFigure)
+    Callback.singleOut(
+        "country-selection" @. Value,
+        "world-highlight" @. (CustomProperty "figure"),
+        (fun (countryName:string) -> 
+            "world-highlight" @. (CustomProperty "figure") => (countryName |> Helpers.createWorldHighlightFigure)
+        )
     )
 
 //----------------------------------------------------------------------------------------------------
