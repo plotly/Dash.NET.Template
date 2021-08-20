@@ -167,7 +167,7 @@ let configureLogging (builder : ILoggingBuilder) =
 
 [<EntryPoint>]
 let main args =
-    let contentRoot = Directory.GetCurrentDirectory()
+    let contentRoot = Reflection.Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     let webRoot     = Path.Combine(contentRoot, "WebRoot")
     Host.CreateDefaultBuilder(args)
         .ConfigureWebHostDefaults(
