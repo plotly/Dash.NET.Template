@@ -2,6 +2,12 @@
 
 A dotnet new template that gets you up and running with Dash.NET!
 
+<div align="center">
+  <a href="https://dash.plotly.com/project-maintenance">
+    <img src="https://dash.plotly.com/assets/images/maintained-by-community.png" width="400px" alt="Maintained by the Plotly Community">
+  </a>
+</div>
+
 ### Installation
 
 to install the newest version of the template, use:
